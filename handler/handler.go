@@ -1,7 +1,7 @@
 package handler
 
 import (
-	conn "github.com/OShuaib/Human-resource-management/database"
+	conn "github.com/OShuaib/Human-resource-management/Db"
 	"github.com/OShuaib/Human-resource-management/domain"	
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
