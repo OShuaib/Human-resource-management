@@ -3,64 +3,72 @@ package handler
 import (
 	conn "github.com/OShuaib/Human-resource-management/Db"
 	"github.com/OShuaib/Human-resource-management/domain"	
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 
-func GetEmployee() func(c *fiber.Ctx) error {
+func GetEmployee(c *fiber.Ctx) {
 
 	query := bson.D{{}}
 	cursor, err  := conn.Mg.Db.Collection("employees").Find(c.Context(),query)
 	if err != nil {
-		return c.Status(500).SendString(err.Error())
+		 c.Status(500).SendString(err.Error())
+		 return
 	}
 	var employees []domain.Employee = make([]domain.Employee, 0)
 	if err := cursor.All(c.Context(), &employees); err != nil {
-		return c.Status(500).SendString(err.Error())
+		
+		c.Status(500).SendString(err.Error())
+		return
 	}
 
-	return c.JSON(employees)
+
+	c.JSON(employees)
 }
 
-func CreateEmployee() func(c *fiber.Ctx) error {
+func CreateEmployee(c *fiber.Ctx)  {
 	collection := conn.Mg.Db.Collection("employees")
 
 	employee := new(domain.Employee)
 
 	if err := c.BodyParser(employee); err != nil {
-		return c.Status(400).SendString(err.Error())
+		 c.Status(400).SendString(err.Error())
+		 return 
 	}
-	employee.ID = ""
+	//employee.ID = ""
 
 	insert, err := collection.InsertOne(c.Context(),employee)
 	if err != nil {
-		return c.Status(400).SendString(err.Error())
+		c.Status(400).SendString(err.Error())
 	}
 
 	filter := bson.D{{Key:"_ id", Value: insert.InsertedID}}
 	createdRecord := collection.FindOne(c.Context(), filter)
 
 	createdEmployee := &domain.Employee{}
-	createdRecord.Decode(createdEmployee)
+	createdRecord.Decode(&createdEmployee)
 
-	return c.Status(201).JSON(createdEmployee)
+	 c.Status(201).JSON(createdEmployee)
+	 return
 }
 
-func UpdateEmployee() func(c *fiber.Ctx) error {
+func UpdateEmployee(c *fiber.Ctx) {
 	idParam := c.Params("id")
 
 	employeeID, err := primitive.ObjectIDFromHex(idParam)
 	if err != nil {
-		return c.SendStatus(400)
+		c.SendStatus(400)
+		return
 	}
 
 	employee := new(domain.Employee)
 
 	if err := c.BodyParser(employee); err != nil {
-		return c.Status(400).SendString(err.Error())
+		c.Status(400).SendString(err.Error())
+		return
 	}
 
 	query := bson.D{{Key: "_id", Value: employeeID}}
@@ -78,32 +86,37 @@ err = conn.Mg.Db.Collection("employees").FindOneAndUpdate(c.Context(), query, up
 
 if err != nil {
 	if err == mongo.ErrNoDocuments{
-		return c.SendStatus(400)
+		c.SendStatus(400)
+		return
 	}
-	return c.SendStatus(500)
+	c.SendStatus(500)
+	return
 }
-employee.ID = idParam
+  employee.ID = idParam
 
-return c.Status(200).JSON(employee)
+ c.Status(200).JSON(employee)
 }
 
-func DeleteEmployee() func(c *fiber.Ctx) error {
+func DeleteEmployee(c *fiber.Ctx) {
 	employeeID, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
-		return c.SendStatus(400)
+		 c.SendStatus(400)
+		 return
 	}
 
 	query := bson.D{{Key: "_id", Value: employeeID}}
-	result, err := conn.mg.Db.Collection("employees").DeleteOne(c.Context(),&query)
+	result, err := conn.Mg.Db.Collection("employees").DeleteOne(c.Context(),&query)
 
 	if err != nil {
-		return c.SendStatus(500)
+		c.SendStatus(500)
+		return
 	}
 
 	if result.DeletedCount < 1 {
-		return c.SendStatus(404)
+		c.SendStatus(404)
+		return
 	}
 
-	return c.Status(200).JSON("record deleted")
+	c.Status(200).JSON("record deleted")
 
 }

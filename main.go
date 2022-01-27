@@ -1,17 +1,13 @@
 package main
 
 import (
-	
+	"fmt"
 	"log"
-	"github.com/OShuaib/Human-resource-management/handler"
+
 	"github.com/OShuaib/Human-resource-management/Db"
-	"github.com/gofiber/fiber/v2"
-	
+	"github.com/OShuaib/Human-resource-management/router"
+	"github.com/gofiber/fiber"
 )
-
-
-
-
 
 
 
@@ -22,16 +18,7 @@ if err:= database.Connect(); err != nil {
  
 	app := fiber.New()
 
-	app.Get("/employee", handler.GetEmployee())
+	router.SetupRoutes(app)
 
-
-	app.Post("/employee", handler.CreateEmployee())
-
-
-	app.Put("/employee/:id",handler.UpdateEmployee())
-
-
-	app.Delete("/employee/:id", handler.DeleteEmployee())
-
-	app.Listen(":300")
+	fmt.Println(app.Listen(":300"))
 }
